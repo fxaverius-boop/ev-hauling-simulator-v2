@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valuasio 1.0 — Aplikasi Valuasi Kontraktor Tambang</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg-2: #111a2e;
+    --surface: #172235;
+    --surface-2: #1f2d47;
+    --border: #2a3b5c;
+    --text: #e7ecf5;
+    --text-dim: #94a3b8;
+    --accent: #f5a623;
+    --accent-2: #38bdf8;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #eab308;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .logo-sub { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 24px; }
+  nav a {
+    display: block;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--text);
+    background: var(--surface-2);
+    border-left-color: var(--accent);
+  }
+  nav a .num {
+    display: inline-block;
+    width: 22px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  /* Main */
+  main { padding: 32px 40px; max-width: 1100px; }
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .page-sub { color: var(--text-dim); margin-bottom: 28px; }
+  section.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 22px;
+  }
+  section.panel h2 {
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section.panel h3 {
+    font-size: 1rem;
+    color: var(--accent-2);
+    margin: 16px 0 10px;
+  }
+  .badge {
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  /* Form grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 9px 11px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .field .hint { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; }
+  /* Risk score cards */
+  .risk-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--accent-2);
+  }
+  .risk-item .label { font-weight: 600; margin-bottom: 4px; }
+  .risk-item .desc { font-size: 0.82rem; color: var(--text-dim); }
+  .risk-item select {
+    padding: 8px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    min-width: 140px;
+  }
+  /* Buttons */
+  button.btn {
+    background: linear-gradient(135deg, var(--accent), #e8941c);
+    color: var(--bg);
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: transform 0.1s;
+  }
+  button.btn:hover { transform: translateY(-1px); }
+  button.btn.secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  /* Results */
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .result-card {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px;
+    border-top: 3px solid var(--accent-2);
+  }
+  .result-card .title { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .result-card .value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+  .result-card .note { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+  .result-card.final { border-top-color: var(--success); background: linear-gradient(135deg, rgba(34,197,94,0.08), var(--surface-2)); }
+  .result-card.final .value { color: var(--success); font-size: 1.8rem; }
+  /* Red flags */
+  .flag {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    border-left: 4px solid;
+  }
+  .flag.danger { background: rgba(239,68,68,0.08); border-color: var(--danger); color: #fca5a5; }
+  .flag.warning { background: rgba(234,179,8,0.08); border-color: var(--warning); color: #fde047; }
+  .flag.success { background: rgba(34,197,94,0.08); border-color: var(--success); color: #86efac; }
+  /* Risk meter */
+  .meter {
+    height: 22px;
+    background: var(--bg-2);
+    border-radius: 11px;
+    overflow: hidden;
+    position: relative;
+    margin: 8px 0;
+  }
+  .meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+    transition: width 0.4s;
+  }
+  .meter-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--text);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+  /* Steps */
+  .step-list { list-style: none; counter-reset: s; }
+  .step-list li {
+    counter-increment: s;
+    padding: 14px 14px 14px 60px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .step-list li::before {
+    content: counter(s);
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+  .step-list li strong { display: block; color: var(--text); margin-bottom: 4px; }
+  .step-list li span { font-size: 0.85rem; color: var(--text-dim); }
+  /* Summary hero */
+  .hero {
+    background: linear-gradient(135deg, rgba(245,166,35,0.12), rgba(56,189,248,0.08));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 26px;
+    margin-bottom: 22px;
+    text-align: center;
+  }
+  .hero .q { font-style: italic; color: var(--text); font-size: 1.1rem; }
+  .hero .co-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; color: var(--accent); }
+  /* Tabs view */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from {opacity:0; transform: translateY(4px);} to {opacity:1;} }
+  /* Callouts */
+  .callout {
+    background: var(--surface-2);
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 0.88rem;
+  }
+  .callout.danger { border-color: var(--danger); }
+  .callout.info { border-color: var(--accent-2); }
+  .formula {
+    font-family: 'Courier New', monospace;
+    background: var(--bg-2);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--accent-2);
+    display: inline-block;
+    margin: 6px 0;
+  }
+  /* ZOPA visualization */
+  .zopa-chart {
+    position: relative;
+    height: 160px;
+    background: var(--bg-2);
+    border-radius: 10px;
+    padding: 30px 20px;
+    margin: 20px 0;
+    overflow: visible;
+  }
+  .zopa-track {
+    position: relative;
+    height: 14px;
+    background: linear-gradient(90deg, #7f1d1d 0%, #7f1d1d 15%, #14532d 30%, #14532d 70%, #7f1d1d 85%, #7f1d1d 100%);
+    border-radius: 7px;
+    margin-top: 50px;
+  }
+  .zopa-range {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--accent-2));
+    border-radius: 7px;
+    opacity: 0.9;
+  }
+  .zopa-marker {
+    position: absolute;
+    top: -44px;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text);
+  }
+  .zopa-marker::after {
+    content: "";
+    display: block;
+    width: 2px;
+    height: 50px;
+    background: var(--text);
+    margin: 4px auto 0;
+  }
+  .zopa-marker .m-val { font-weight: 700; font-size: 0.8rem; }
+  .zopa-marker .m-lbl { color: var(--text-dim); font-size: 0.68rem; white-space: nowrap; }
+  .zopa-marker.floor { color: var(--danger); }
+  .zopa-marker.floor::after { background: var(--danger); }
+  .zopa-marker.fair { color: var(--accent); }
+  .zopa-marker.fair::after { background: var(--accent); }
+  .zopa-marker.strategic { color: var(--accent-2); }
+  .zopa-marker.strategic::after { background: var(--accent-2); }
+  .zopa-marker.sellerMin { color: var(--warning); top: auto; bottom: -44px; }
+  .zopa-marker.sellerMin::after { margin-top: 0; margin-bottom: 4px; background: var(--warning); }
+  .zopa-marker.sellerAnchor { color: #fb7185; top: auto; bottom: -44px; }
+  .zopa-marker.sellerAnchor::after { margin-top: 0; margin-bottom: 4px; background: #fb7185; }
+  .zopa-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    justify-content: center;
+  }
+  .zopa-legend .dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px;
+  }
+  .tactic-card {
+    background: var(--surface-2);
+    border-left: 4px solid var(--accent-2);
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .tactic-card h4 { color: var(--accent); font-size: 0.95rem; margin-bottom: 6px; }
+  .tactic-card p { font-size: 0.86rem; color: var(--text-dim); margin-bottom: 4px; }
+  .tactic-card .quote { font-style: italic; color: var(--text); font-size: 0.85rem; background: var(--bg-2); padding: 8px 12px; border-radius: 5px; margin-top: 6px; }
+  @media (max-width: 880px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: relative; height: auto; }
+    main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside>
+    <div class="logo">Valuasio 1.0</div>
+    <div class="logo-sub">Mining Contractor Valuation</div>
+    <div id="saveStatus" style="font-size:0.7rem; color:var(--text-dim); margin-bottom:18px; padding:6px 10px; background:var(--bg-2); border-radius:6px; border-left:3px solid var(--success);">💾 Auto-save aktif</div>
+    <nav id="nav">
+      <a data-view="company" class="active"><span class="num">1</span>Profil Perusahaan</a>
+      <a data-view="contract"><span class="num">2</span>Kualitas Kontrak</a>
+      <a data-view="fleet"><span class="num">3</span>Fleet &amp; Biaya</a>
+      <a data-view="financial"><span class="num">4</span>Financial Input</a>
+      <a data-view="risk"><span class="num">5</span>Risk Map</a>
+      <a data-view="valuation"><span class="num">6</span>Hasil Valuasi</a>
+      <a data-view="zopa"><span class="num">7</span>ZOPA &amp; Negosiasi</a>
+      <a data-view="batna"><span class="num">8</span>BATNA (Import JSON)</a>
+      <a data-view="framework"><span class="num">9</span>Framework &amp; Deal</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="page-title">Aplikasi Valuasi Kontraktor Tambang</div>
+    <div class="page-sub">Isi data perusahaan target akuisisi — aplikasi akan menghitung valuasi triangulasi, skor risiko, dan rekomendasi <em>deal structure</em>.</div>
+
+    <!-- VIEW 1: PROFIL -->
+    <div class="view active" id="view-company">
+      <section class="panel">
+        <h2>1. Profil Perusahaan <span class="badge">Identitas</span></h2>
+        <div class="grid">
+          <div class="field"><label>Nama Perusahaan</label><input id="coName" placeholder="PT Contoh Mining Services"></div>
+          <div class="field"><label>Komoditas Utama</label>
+            <select id="commodity">
+              <option>Batubara</option><option>Nikel</option><option>Emas</option><option>Tembaga</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div class="field"><label>Lokasi Operasi</label><input id="location" placeholder="Kalimantan Timur"></div>
+          <div class="field"><label>Tahun Berdiri</label><input type="number" id="founded" placeholder="2015"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 2: CONTRACT -->
+    <div class="view" id="view-contract">
+      <section class="panel">
+        <h2>2A. Kualitas Kontrak <span class="badge">Prioritas #1</span></h2>
+        <div class="callout info">Perusahaan kontraktor tambang hidup dari kontraknya — ini lebih penting daripada alat.</div>
+        <div class="grid">
+          <div class="field"><label>Sisa Umur Kontrak Utama (tahun)</label><input type="number" id="contractYears" step="0.5" placeholder="3"><div class="hint">&lt;2 tahun = Red Flag</div></div>
+          <div class="field"><label>Skema Kontrak</label>
+            <select id="contractScheme"><option>Unit Rate</option><option>Lumpsum</option><option>Cost-Plus</option></select>
+          </div>
+          <div class="field"><label>Escalation Clause (BBM/Inflasi)</label>
+            <select id="escalation"><option value="yes">Ya</option><option value="no">Tidak</option></select>
+          </div>
+          <div class="field"><label>Tier Klien Utama</label>
+            <select id="clientTier"><option value="1">Tier-1 (Adaro/Freeport/KPC)</option><option value="2">Tier-2 (Mid-size)</option><option value="3">Tier-3 (Junior Miner)</option></select>
+          </div>
+          <div class="field"><label>Jaminan Perpanjangan</label>
+            <select id="extension"><option value="yes">Ada</option><option value="maybe">Indikasi Ada</option><option value="no">Tidak Ada</option></select>
+          </div>
+          <div class="field"><label>% Revenue dari Klien Terbesar</label><input type="number" id="clientConcentration" placeholder="65"><div class="hint">&gt;60–70% = risiko tinggi</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Order Book / Backlog</h2>
+        <div class="grid">
+          <div class="field"><label>Total Backlog Kontrak (Miliar IDR)</label><input type="number" id="backlog" placeholder="500"></div>
+          <div class="field"><label>Minimum Guaranteed Volume?</label>
+            <select id="minVolume"><option value="yes">Ya</option><option value="no">Tidak</option></select>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 3: FLEET -->
+    <div class="view" id="view-fleet">
+      <section class="panel">
+        <h2>3A. Fleet &amp; Equipment</h2>
+        <div class="callout">Jangan cuma lihat jumlah unit — yang penting umur, utilization, dan kesesuaian dengan stripping ratio.</div>
+        <div class="grid">
+          <div class="field"><label>Jumlah Unit Alat Berat</label><input type="number" id="fleetCount" placeholder="45"></div>
+          <div class="field"><label>Rata-rata Usia Alat (tahun)</label><input type="number" id="fleetAge" step="0.5" placeholder="6"></div>
+          <div class="field"><label>Fleet Availability (%)</label><input type="number" id="availability" placeholder="85"></div>
+          <div class="field"><label>Fleet Utilization (%)</label><input type="number" id="utilization" placeholder="75"></div>
+          <div class="field"><label>% Alat Milik Sendiri</label><input type="number" id="ownedPct" placeholder="60"></div>
+          <div class="field"><label>Nilai Pasar Fleet (Miliar IDR)</label><input type="number" id="fleetValue" placeholder="250"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>3B. Struktur Biaya (% dari Revenue)</h2>
+        <div class="grid">
+          <div class="field"><label>Fuel (%)</label><input type="number" id="costFuel" placeholder="40"><div class="hint">Normal 30–50%</div></div>
+          <div class="field"><label>Maintenance (%)</label><input type="number" id="costMaint" placeholder="15"></div>
+          <div class="field"><label>Labor (%)</label><input type="number" id="costLabor" placeholder="18"></div>
+          <div class="field"><label>Overhead &amp; Lain-lain (%)</label><input type="number" id="costOther" placeholder="12"></div>
+          <div class="field"><label>Cost per BCM (IDR)</label><input type="number" id="costPerBCM" placeholder="18000"></div>
+          <div class="field"><label>Benchmark Cost per BCM (IDR)</label><input type="number" id="benchmarkBCM" placeholder="20000"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>3C. Manajemen &amp; Operasi</h2>
+        <div class="grid">
+          <div class="field"><label>Ada SOP &amp; Dispatch System?</label>
+            <select id="sopLevel"><option value="3">Ya, Lengkap &amp; Terdigitalisasi</option><option value="2">Sebagian</option><option value="1">Feeling-based / Minim</option></select>
+          </div>
+          <div class="field"><label>Ketergantungan pada Orang Kunci</label>
+            <select id="keyPerson"><option value="1">Rendah (sistem berjalan)</option><option value="2">Sedang</option><option value="3">Tinggi (1–2 orang)</option></select>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 4: FINANCIAL -->
+    <div class="view" id="view-financial">
+      <section class="panel">
+        <h2>4. Input Keuangan <span class="badge">Semua dalam Miliar IDR</span></h2>
+        <div class="grid">
+          <div class="field"><label>Revenue Tahunan</label><input type="number" id="revenue" placeholder="800"></div>
+          <div class="field"><label>EBITDA Tahunan</label><input type="number" id="ebitda" placeholder="160"><div class="hint">Margin EBITDA = EBITDA/Revenue</div></div>
+          <div class="field"><label>Net Profit</label><input type="number" id="netProfit" placeholder="70"></div>
+          <div class="field"><label>Operating Cash Flow</label><input type="number" id="opCashFlow" placeholder="140"><div class="hint">"Profit di atas kertas" vs kas riil</div></div>
+          <div class="field"><label>Total Hutang (incl. Leasing)</label><input type="number" id="totalDebt" placeholder="180"></div>
+          <div class="field"><label>Total Aset</label><input type="number" id="totalAssets" placeholder="450"></div>
+          <div class="field"><label>Liabilities Lainnya</label><input type="number" id="otherLiab" placeholder="40"></div>
+          <div class="field"><label>Capex Tahunan (alat pengganti)</label><input type="number" id="capex" placeholder="50"></div>
+          <div class="field"><label>Growth Rate Proyeksi (%)</label><input type="number" id="growth" step="0.5" placeholder="5"></div>
+          <div class="field"><label>Discount Rate / WACC (%)</label><input type="number" id="discountRate" step="0.5" placeholder="14"><div class="hint">Kontraktor tambang umumnya 12–16%</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Input ZOPA (Zone of Possible Agreement)</h2>
+        <div class="callout info">Parameter untuk estimasi <strong>Strategic Value</strong> (batas atas buyer) dan <strong>psikologi seller</strong>.</div>
+        <h3>Strategic Value — Sinergi untuk Buyer</h3>
+        <div class="grid">
+          <div class="field"><label>Potensi Sinergi Biaya (Miliar IDR/tahun)</label><input type="number" id="synergyCost" placeholder="10"><div class="hint">Penghematan operasional setelah akuisisi</div></div>
+          <div class="field"><label>Potensi Sinergi Revenue (Miliar IDR/tahun)</label><input type="number" id="synergyRevenue" placeholder="15"><div class="hint">Ekspansi ke site lain, cross-sell</div></div>
+          <div class="field"><label>Tahun Realisasi Sinergi</label><input type="number" id="synergyYears" placeholder="5"></div>
+          <div class="field"><label>Margin Improvement Potential (%)</label><input type="number" id="marginImprovement" step="0.5" placeholder="3"></div>
+        </div>
+        <h3>Seller Psychology — Estimasi Ekspektasi Penjual</h3>
+        <div class="grid">
+          <div class="field"><label>Seller Anchor Multiple (EBITDA x)</label><input type="number" id="sellerAnchor" step="0.1" placeholder="5.5"><div class="hint">Multiple optimistik seller (5–6x umum)</div></div>
+          <div class="field"><label>Tekanan Finansial Seller</label>
+            <select id="sellerPressure">
+              <option value="low">Rendah (tidak terburu-buru)</option>
+              <option value="medium" selected>Sedang</option>
+              <option value="high">Tinggi (butuh exit cepat)</option>
+            </select>
+          </div>
+          <div class="field"><label>Motivasi Jual Utama</label>
+            <select id="sellerMotive">
+              <option value="cash">Butuh Cash</option>
+              <option value="exit">Exit/Retirement</option>
+              <option value="distress">Financial Distress</option>
+              <option value="strategic">Strategic Reallocation</option>
+            </select>
+          </div>
+          <div class="field"><label>Ada Bidder Kompetitor?</label>
+            <select id="competingBidder">
+              <option value="no">Tidak Ada</option>
+              <option value="maybe">Kemungkinan Ada</option>
+              <option value="yes">Ada (kompetitif)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 5: RISK -->
+    <div class="view" id="view-risk">
+      <section class="panel">
+        <h2>5. Critical Risk Map — Skor 1 (Rendah) s/d 5 (Tinggi)</h2>
+        <div id="riskItems"></div>
+        <h3>Risk Index Keseluruhan</h3>
+        <div class="meter"><div class="meter-fill" id="riskMeter" style="width:0%"></div><div class="meter-label" id="riskLabel">—</div></div>
+        <div class="callout info" id="riskInterpretation">Isi skor risiko di atas untuk melihat interpretasi.</div>
+      </section>
+    </div>
+
+    <!-- INPUT ZOPA tambahan di financial view: -->
+    <!-- VIEW 6: VALUATION -->
+    <div class="view" id="view-valuation">
+      <section class="panel" style="text-align:center;">
+        <button class="btn" onclick="runValuation()">▶ Hitung Valuasi</button>
+        <button class="btn secondary" onclick="exportValuationJSON()" style="margin-left:8px;">⬇ Export JSON (Valuasi + ZOPA)</button>
+        <button class="btn secondary" onclick="resetAll()" style="margin-left:8px;">Reset</button>
+      </section>
+
+      <div id="valuationOutput"></div>
+    </div>
+
+    <!-- VIEW ZOPA -->
+    <div class="view" id="view-zopa">
+      <section class="panel">
+        <h2>ZOPA — Zone of Possible Agreement <span class="badge">Negosiasi</span></h2>
+        <div class="callout info">
+          <strong>ZOPA</strong> = range harga di mana <em>deal</em> masih masuk akal untuk buyer &amp; seller.
+          Overlap → deal bisa terjadi. Tidak overlap → <em>no deal</em>.
+          <br><br><strong>Prinsip:</strong> ZOPA bukan soal menemukan harga tengah, tapi <strong>mengelola risiko melalui struktur</strong>.
+        </div>
+        <p style="text-align:center; padding: 12px;">
+          <button class="btn" onclick="runValuation()">▶ Hitung Valuasi &amp; ZOPA</button>
+        </p>
+        <div id="zopaOutput"><p class="page-sub" style="text-align:center;">Jalankan perhitungan valuasi untuk melihat analisis ZOPA.</p></div>
+      </section>
+    </div>
+
+    <!-- VIEW BATNA (Import JSON) -->
+    <div class="view" id="view-batna">
+      <section class="panel">
+        <h2>BATNA — Best Alternative to Negotiated Agreement <span class="badge">Import JSON</span></h2>
+        <div class="callout info">
+          <strong>Alur kerja:</strong><br>
+          1️⃣ Selesaikan Valuasi &amp; ZOPA di tab sebelumnya → <strong>Export JSON</strong><br>
+          2️⃣ <strong>Import JSON</strong> di sini → isi 3 opsi alternatif → hitung BATNA<br>
+          3️⃣ Sistem membandingkan BATNA dengan Fair/Strategic/Entry Price dari JSON
+          <br><br><em>"BATNA yang kuat = Anda tidak pernah dipaksa beli."</em>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Step 1 — Import Hasil Valuasi &amp; ZOPA (JSON)</h2>
+        <div style="text-align:center; padding:20px;">
+          <button class="btn" onclick="document.getElementById('batnaFileInput').click()">⬆ Pilih File JSON</button>
+          <input type="file" id="batnaFileInput" accept="application/json" style="display:none;" onchange="importBatnaJSON(event)">
+          <div id="batnaImportStatus" style="margin-top:12px; font-size:0.85rem; color:var(--text-dim);">Belum ada file diimpor.</div>
+        </div>
+        <div id="batnaImportSummary"></div>
+      </section>
+
+      <section class="panel" id="batnaInputPanel" style="display:none;">
+        <h2>Step 2 — Input 3 Opsi BATNA</h2>
+        <div class="callout">BATNA harus <strong>angka, bukan konsep</strong>. Isi minimal 1 opsi.</div>
+
+        <h3>Opsi 1 — Akuisisi Target Alternatif</h3>
+        <div class="grid">
+          <div class="field"><label>Harga Target Alternatif (Miliar IDR)</label><input type="number" id="b_altAcqPrice" placeholder="570" oninput="recomputeBatna()"></div>
+          <div class="field"><label>Profil Risiko Target Alternatif</label>
+            <select id="b_altAcqRisk" onchange="recomputeBatna()">
+              <option value="lower">Lebih Rendah (multi-client, kontrak panjang)</option>
+              <option value="similar" selected>Setara</option>
+              <option value="higher">Lebih Tinggi</option>
+            </select>
+          </div>
+        </div>
+
+        <h3>Opsi 2 — Build Your Own (Greenfield)</h3>
+        <div class="grid">
+          <div class="field"><label>Capex Alat (Miliar IDR)</label><input type="number" id="b_greenfieldCapex" placeholder="375" oninput="recomputeBatna()"></div>
+          <div class="field"><label>Setup + Working Capital (Miliar IDR)</label><input type="number" id="b_greenfieldSetup" placeholder="150" oninput="recomputeBatna()"></div>
+          <div class="field"><label>Waktu hingga Operasional (tahun)</label><input type="number" id="b_greenfieldTime" step="0.5" placeholder="1.5" oninput="recomputeBatna()"></div>
+          <div class="field"><label>Risk/Delay Discount (%)</label><input type="number" id="b_greenfieldDiscount" placeholder="15" oninput="recomputeBatna()"></div>
+        </div>
+
+        <h3>Opsi 3 — Capital Reallocation (Opportunity Cost)</h3>
+        <div class="grid">
+          <div class="field"><label>IRR Investasi Alternatif (%)</label><input type="number" id="b_altIRR" step="0.5" placeholder="18" oninput="recomputeBatna()"></div>
+          <div class="field"><label>Ekuivalen Value Investasi Lain (Miliar IDR)</label><input type="number" id="b_altInvestEquiv" placeholder="480" oninput="recomputeBatna()"></div>
+        </div>
+
+        <div style="text-align:center; padding-top:18px;">
+          <button class="btn" onclick="recomputeBatna()">▶ Hitung BATNA</button>
+        </div>
+      </section>
+
+      <div id="batnaOutput"></div>
+    </div>
+
+    <!-- VIEW 9: FRAMEWORK -->
+    <div class="view" id="view-framework">
+      <section class="panel">
+        <h2>7A. Practical Acquisition Framework (5 Steps)</h2>
+        <ol class="step-list">
+          <li><strong>Commercial Due Diligence</strong><span>Kontrak · Klien · Revenue sustainability</span></li>
+          <li><strong>Operational Audit</strong><span>Produktivitas alat · Cost per bcm · Efisiensi operasi</span></li>
+          <li><strong>Financial Deep Dive</strong><span>Cash vs profit · Hidden liabilities · Capex ke depan</span></li>
+          <li><strong>Valuation Triangulation</strong><span>EBITDA Multiple + DCF + Asset Value → ambil nilai konservatif</span></li>
+          <li><strong>Deal Structuring</strong><span>Down payment rendah · Sisanya performance-based</span></li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2>7B. Rekomendasi Deal Structure</h2>
+        <div id="dealStructureOutput"><p class="page-sub">Jalankan perhitungan valuasi dulu untuk melihat rekomendasi deal.</p></div>
+      </section>
+
+      <section class="panel">
+        <h2>7C. Insight Jujur dari Lapangan</h2>
+        <div class="callout info">Kesalahan paling umum investor: fokus ke aset (alat berat). Padahal yang menentukan <em>value</em> adalah: <strong>Kontrak + Cash Flow + Sustainability</strong>.</div>
+        <div class="hero">
+          <div class="q">"Anda tidak membeli alat, Anda membeli kepastian volume pekerjaan."</div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Navigation
+  const navLinks = document.querySelectorAll('#nav a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      const target = link.dataset.view;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + target).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+
+  // Risk items
+  const risks = [
+    {id:'rContract', label:'Contract Risk', desc:'Sisa umur, escalation, guaranteed volume'},
+    {id:'rOperational', label:'Operational Risk', desc:'Produktivitas alat, bottleneck operasi'},
+    {id:'rFinancial', label:'Financial Risk', desc:'Hutang leasing, cash flow vs profit'},
+    {id:'rRegulatory', label:'Regulatory & Legal Risk', desc:'IUP klien, pajak, sengketa lahan'},
+    {id:'rCommodity', label:'Commodity Price Risk', desc:'Sensitivitas terhadap harga komoditas'},
+  ];
+  const riskContainer = document.getElementById('riskItems');
+  risks.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'risk-item';
+    div.innerHTML = `
+      <div><div class="label">${r.label}</div><div class="desc">${r.desc}</div></div>
+      <select id="${r.id}" onchange="updateRiskMeter()">
+        <option value="1">1 — Sangat Rendah</option>
+        <option value="2">2 — Rendah</option>
+        <option value="3" selected>3 — Sedang</option>
+        <option value="4">4 — Tinggi</option>
+        <option value="5">5 — Sangat Tinggi</option>
+      </select>`;
+    riskContainer.appendChild(div);
+  });
+
+  function updateRiskMeter() {
+    const scores = risks.map(r => parseInt(document.getElementById(r.id).value));
+    const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+    const pct = (avg/5)*100;
+    document.getElementById('riskMeter').style.width = pct + '%';
+    document.getElementById('riskLabel').textContent = avg.toFixed(2) + ' / 5';
+    let txt = '';
+    if (avg <= 2) txt = '🟢 Risk profile RENDAH — kandidat menarik untuk akuisisi.';
+    else if (avg <= 3) txt = '🟡 Risk profile SEDANG — perlu mitigasi terstruktur via deal structure.';
+    else if (avg <= 4) txt = '🟠 Risk profile TINGGI — butuh diskon harga & earn-out agresif.';
+    else txt = '🔴 Risk profile SANGAT TINGGI — pertimbangkan ulang akuisisi.';
+    document.getElementById('riskInterpretation').innerHTML = txt;
+    return avg;
+  }
+  updateRiskMeter();
+
+  const num = id => parseFloat(document.getElementById(id).value) || 0;
+  const val = id => document.getElementById(id).value;
+  const fmt = n => 'IDR ' + n.toLocaleString('id-ID', {maximumFractionDigits:1}) + ' M';
+
+  function runValuation() {
+    const coName = val('coName') || 'Perusahaan Target';
+    const revenue = num('revenue');
+    const ebitda = num('ebitda');
+    const netProfit = num('netProfit');
+    const opCashFlow = num('opCashFlow');
+    const totalDebt = num('totalDebt');
+    const otherLiab = num('otherLiab');
+    const fleetValue = num('fleetValue');
+    const backlog = num('backlog');
+    const capex = num('capex');
+    const growth = num('growth')/100;
+    const wacc = num('discountRate')/100;
+    const contractYears = num('contractYears');
+    const clientTier = parseInt(val('clientTier'));
+    const escalation = val('escalation');
+    const avgRisk = updateRiskMeter();
+
+    // A. EBITDA Multiple
+    let multiple = 4;
+    if (contractYears >= 7 && clientTier === 1) multiple = 5.5;
+    else if (contractYears >= 5) multiple = 5;
+    else if (contractYears >= 3) multiple = 4;
+    else if (contractYears >= 2) multiple = 3.5;
+    else multiple = 3;
+    if (escalation === 'no') multiple -= 0.3;
+    if (avgRisk >= 4) multiple -= 0.5;
+    multiple = Math.max(2.5, multiple);
+    const ebitdaValue = ebitda * multiple;
+
+    // B. DCF (simple, limited by contract life)
+    const projectionYears = Math.max(1, Math.min(10, contractYears || 3));
+    let dcfValue = 0;
+    const baseFCF = opCashFlow - capex;
+    for (let y = 1; y <= projectionYears; y++) {
+      const fcf = baseFCF * Math.pow(1 + growth, y - 1);
+      dcfValue += fcf / Math.pow(1 + wacc, y);
+    }
+    // Terminal only if long contract + renewal likely
+    if (contractYears >= 5 && val('extension') !== 'no') {
+      const terminalFCF = baseFCF * Math.pow(1 + growth, projectionYears);
+      const terminal = (terminalFCF * (1 + 0.02)) / (wacc - 0.02);
+      dcfValue += terminal / Math.pow(1 + wacc, projectionYears);
+    }
+
+    // C. Asset-based (Floor)
+    const assetValue = Math.max(0, fleetValue - totalDebt - otherLiab);
+
+    // D. Order Book (realization factor 30-50%)
+    const orderBookValue = backlog * 0.4;
+
+    // Triangulation - conservative (weighted, favor DCF & lowest)
+    const values = [ebitdaValue, dcfValue, assetValue, orderBookValue].filter(v => v > 0);
+    const weighted = ebitdaValue * 0.30 + dcfValue * 0.40 + assetValue * 0.20 + orderBookValue * 0.10;
+    const conservative = Math.min(weighted, values.length ? values.reduce((a,b)=>a+b,0)/values.length : 0);
+
+    // Red flag detection
+    const flags = [];
+    if (contractYears && contractYears < 2) flags.push({t:'danger', m:'🚩 Kontrak habis <2 tahun — RED FLAG mayor.'});
+    if (val('extension') === 'no') flags.push({t:'danger', m:'🚩 Tidak ada jaminan perpanjangan kontrak.'});
+    if (revenue && ebitda && (ebitda/revenue) < 0.10) flags.push({t:'danger', m:'🚩 Margin EBITDA <10% — marginal.'});
+    if (num('clientConcentration') > 70) flags.push({t:'danger', m:'🚩 Konsentrasi klien >70% — risiko collapse tinggi.'});
+    else if (num('clientConcentration') > 60) flags.push({t:'warning', m:'⚠ Konsentrasi klien 60-70% — perhatian.'});
+    if (escalation === 'no') flags.push({t:'warning', m:'⚠ Tidak ada escalation clause BBM/inflasi.'});
+    if (num('fleetAge') > 8) flags.push({t:'warning', m:'⚠ Rata-rata usia fleet >8 tahun — maintenance cost naik.'});
+    if (num('availability') && num('availability') < 80) flags.push({t:'warning', m:'⚠ Availability <80% — operasi belum optimal.'});
+    if (opCashFlow && netProfit && opCashFlow < netProfit * 0.6) flags.push({t:'danger', m:'🚩 Cash flow <<< profit — "profit di atas kertas".'});
+    if (parseInt(val('sopLevel')) === 1) flags.push({t:'warning', m:'⚠ Operasi masih feeling-based — scalability terbatas.'});
+    if (parseInt(val('keyPerson')) === 3) flags.push({t:'warning', m:'⚠ Ketergantungan tinggi pada 1–2 orang kunci.'});
+    if (avgRisk >= 4) flags.push({t:'danger', m:'🚩 Risk index >4 — sangat berisiko.'});
+    if (flags.length === 0) flags.push({t:'success', m:'✓ Tidak ada red flag signifikan terdeteksi.'});
+
+    // Render
+    const ebitdaMargin = revenue ? ((ebitda/revenue)*100).toFixed(1) : 0;
+    const cashQuality = netProfit ? ((opCashFlow/netProfit)*100).toFixed(0) : 0;
+
+    document.getElementById('valuationOutput').innerHTML = `
+      <div class="hero">
+        <div class="co-name">${coName}</div>
+        <div class="page-sub">Ringkasan Valuasi Triangulasi</div>
+      </div>
+
+      <section class="panel">
+        <h2>Indikator Kunci</h2>
+        <div class="result-grid">
+          <div class="result-card"><div class="title">Revenue</div><div class="value">${fmt(revenue)}</div></div>
+          <div class="result-card"><div class="title">EBITDA Margin</div><div class="value">${ebitdaMargin}%</div><div class="note">${ebitdaMargin < 10 ? 'Di bawah threshold sehat' : 'Sehat'}</div></div>
+          <div class="result-card"><div class="title">Cash Quality</div><div class="value">${cashQuality}%</div><div class="note">OCF / Net Profit</div></div>
+          <div class="result-card"><div class="title">Risk Index</div><div class="value">${avgRisk.toFixed(2)}/5</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Triangulasi 4 Metode Valuasi</h2>
+        <div class="result-grid">
+          <div class="result-card">
+            <div class="title">A. EBITDA Multiple</div>
+            <div class="value">${fmt(ebitdaValue)}</div>
+            <div class="note">Multiple ${multiple.toFixed(1)}x · <span class="formula">EBITDA × ${multiple.toFixed(1)}</span></div>
+          </div>
+          <div class="result-card">
+            <div class="title">B. DCF (Contract-Limited)</div>
+            <div class="value">${fmt(dcfValue)}</div>
+            <div class="note">${projectionYears} thn proyeksi · WACC ${(wacc*100).toFixed(1)}%</div>
+          </div>
+          <div class="result-card">
+            <div class="title">C. Asset-Based (Floor)</div>
+            <div class="value">${fmt(assetValue)}</div>
+            <div class="note">Fleet − Debt − Liab</div>
+          </div>
+          <div class="result-card">
+            <div class="title">D. Order Book Value</div>
+            <div class="value">${fmt(orderBookValue)}</div>
+            <div class="note">Backlog × 40% (margin realisasi)</div>
+          </div>
+          <div class="result-card final">
+            <div class="title">⭐ Valuasi Konservatif (Rekomendasi)</div>
+            <div class="value">${fmt(conservative)}</div>
+            <div class="note">Weighted: EBITDA 30% · DCF 40% · Asset 20% · OrderBook 10%</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>🚩 Red Flags &amp; Warning</h2>
+        ${flags.map(f => `<div class="flag ${f.t}">${f.m}</div>`).join('')}
+      </section>
+    `;
+
+    // ============ ZOPA ANALYSIS ============
+    // A. Floor Value (Buyer walk-away) — worst case: asset value, kontrak gagal
+    const floorValue = Math.max(assetValue, conservative * 0.65);
+
+    // B. Fair Value — nilai konservatif
+    const fairValue = conservative;
+
+    // C. Strategic Value (Buyer max) — fair + PV of synergies + margin improvement
+    const synergyCost = num('synergyCost');
+    const synergyRevenue = num('synergyRevenue');
+    const synergyYears = num('synergyYears') || 5;
+    const marginImprovement = num('marginImprovement')/100;
+    let pvSynergy = 0;
+    const totalSynergy = synergyCost + synergyRevenue + (revenue * marginImprovement);
+    for (let y = 1; y <= synergyYears; y++) {
+      pvSynergy += (totalSynergy * Math.pow(1 + growth, y-1)) / Math.pow(1 + (wacc || 0.14), y);
+    }
+    const strategicValue = fairValue + pvSynergy;
+
+    // D. Seller Side
+    const sellerAnchorMultiple = num('sellerAnchor') || 5.5;
+    const sellerAnchor = ebitda * sellerAnchorMultiple; // Optimistic
+    const sellerPressure = val('sellerPressure');
+    const sellerMotive = val('sellerMotive');
+    const competingBidder = val('competingBidder');
+
+    // Seller real expectation: anchor - 10% to 25%
+    let realDiscount = 0.15;
+    if (sellerPressure === 'high') realDiscount = 0.25;
+    else if (sellerPressure === 'low') realDiscount = 0.10;
+    const sellerRealExpectation = sellerAnchor * (1 - realDiscount);
+
+    // Seller Pain Threshold (minimum accept)
+    let painDiscount = 0.30;
+    if (sellerMotive === 'distress') painDiscount = 0.45;
+    else if (sellerMotive === 'cash') painDiscount = 0.35;
+    else if (sellerMotive === 'exit') painDiscount = 0.30;
+    else painDiscount = 0.25;
+    if (competingBidder === 'yes') painDiscount -= 0.10; // lebih tinggi (kompetitif)
+    else if (competingBidder === 'maybe') painDiscount -= 0.05;
+    const sellerMin = Math.max(assetValue * 0.9, sellerAnchor * (1 - painDiscount));
+
+    // ZOPA Overlap
+    const buyerMax = strategicValue;
+    const zopaLow = Math.max(sellerMin, floorValue);
+    const zopaHigh = Math.min(buyerMax, sellerAnchor);
+    const hasOverlap = zopaHigh > zopaLow;
+    const zopaMidpoint = (zopaLow + zopaHigh) / 2;
+
+    // Normalize for chart (0-100%)
+    const chartMin = Math.min(floorValue, sellerMin) * 0.85;
+    const chartMax = Math.max(strategicValue, sellerAnchor) * 1.05;
+    const chartRange = chartMax - chartMin;
+    const pos = v => ((v - chartMin) / chartRange) * 100;
+
+    // Hybrid deal (recommended entry price)
+    const entryPrice = hasOverlap
+      ? Math.min(fairValue, zopaLow + (zopaHigh - zopaLow) * 0.35)
+      : floorValue;
+
+    // Render ZOPA output
+    const zopaHtml = `
+      <section class="panel">
+        <h2>Layer Valuasi Buyer (Anda)</h2>
+        <div class="result-grid">
+          <div class="result-card" style="border-top-color:var(--danger);">
+            <div class="title">A. Floor Value</div>
+            <div class="value" style="color:var(--danger);">${fmt(floorValue)}</div>
+            <div class="note">Walk-away price — jangan bayar lebih dari ini</div>
+          </div>
+          <div class="result-card" style="border-top-color:var(--accent);">
+            <div class="title">B. Fair Value</div>
+            <div class="value">${fmt(fairValue)}</div>
+            <div class="note">Target ideal beli (DCF + EBITDA konservatif)</div>
+          </div>
+          <div class="result-card" style="border-top-color:var(--accent-2);">
+            <div class="title">C. Strategic Value</div>
+            <div class="value" style="color:var(--accent-2);">${fmt(strategicValue)}</div>
+            <div class="note">Max willingness to pay (fair + sinergi PV)</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Estimasi Psikologi Seller</h2>
+        <div class="result-grid">
+          <div class="result-card" style="border-top-color:#fb7185;">
+            <div class="title">Anchor Seller (Optimistic)</div>
+            <div class="value" style="color:#fb7185;">${fmt(sellerAnchor)}</div>
+            <div class="note">EBITDA × ${sellerAnchorMultiple.toFixed(1)}x</div>
+          </div>
+          <div class="result-card" style="border-top-color:var(--warning);">
+            <div class="title">Real Expectation</div>
+            <div class="value" style="color:var(--warning);">${fmt(sellerRealExpectation)}</div>
+            <div class="note">Anchor − ${(realDiscount*100).toFixed(0)}% (tekanan: ${sellerPressure})</div>
+          </div>
+          <div class="result-card" style="border-top-color:var(--warning);">
+            <div class="title">Pain Threshold (Seller Min)</div>
+            <div class="value" style="color:var(--warning);">${fmt(sellerMin)}</div>
+            <div class="note">Motivasi: ${sellerMotive} · Bidder lain: ${competingBidder}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Visualisasi ZOPA</h2>
+        <div class="zopa-chart">
+          <div class="zopa-marker floor" style="left:${pos(floorValue)}%;">
+            <div class="m-lbl">FLOOR</div><div class="m-val">${fmt(floorValue)}</div>
+          </div>
+          <div class="zopa-marker fair" style="left:${pos(fairValue)}%;">
+            <div class="m-lbl">FAIR</div><div class="m-val">${fmt(fairValue)}</div>
+          </div>
+          <div class="zopa-marker strategic" style="left:${pos(strategicValue)}%;">
+            <div class="m-lbl">STRATEGIC (MAX)</div><div class="m-val">${fmt(strategicValue)}</div>
+          </div>
+          <div class="zopa-track">
+            ${hasOverlap ? `<div class="zopa-range" style="left:${pos(zopaLow)}%; width:${pos(zopaHigh)-pos(zopaLow)}%;"></div>` : ''}
+          </div>
+          <div class="zopa-marker sellerMin" style="left:${pos(sellerMin)}%;">
+            <div class="m-val">${fmt(sellerMin)}</div><div class="m-lbl">SELLER MIN</div>
+          </div>
+          <div class="zopa-marker sellerAnchor" style="left:${pos(sellerAnchor)}%;">
+            <div class="m-val">${fmt(sellerAnchor)}</div><div class="m-lbl">SELLER ANCHOR</div>
+          </div>
+        </div>
+        <div class="zopa-legend">
+          <span><span class="dot" style="background:var(--danger);"></span>Buyer Floor</span>
+          <span><span class="dot" style="background:var(--accent);"></span>Fair Value</span>
+          <span><span class="dot" style="background:var(--accent-2);"></span>Strategic Max</span>
+          <span><span class="dot" style="background:var(--success);"></span>ZOPA Overlap</span>
+          <span><span class="dot" style="background:var(--warning);"></span>Seller Min</span>
+          <span><span class="dot" style="background:#fb7185;"></span>Seller Anchor</span>
+        </div>
+
+        ${hasOverlap ? `
+          <div class="result-grid" style="margin-top:18px;">
+            <div class="result-card final">
+              <div class="title">✅ ZOPA TERBENTUK</div>
+              <div class="value">${fmt(zopaLow)} – ${fmt(zopaHigh)}</div>
+              <div class="note">Width: ${fmt(zopaHigh - zopaLow)} · Midpoint: ${fmt(zopaMidpoint)}</div>
+            </div>
+            <div class="result-card" style="border-top-color:var(--success);">
+              <div class="title">🎯 Target Entry Price</div>
+              <div class="value" style="color:var(--success);">${fmt(entryPrice)}</div>
+              <div class="note">Di 35% bawah ZOPA — ruang naik saat negosiasi</div>
+            </div>
+          </div>
+        ` : `
+          <div class="flag danger" style="margin-top:16px;">
+            ❌ <strong>NO ZOPA</strong> — Seller min (${fmt(sellerMin)}) di atas Buyer max (${fmt(strategicValue)}).
+            Rekomendasi: walk away, atau geser ZOPA via deal structuring (earn-out agresif).
+          </div>
+        `}
+      </section>
+
+      <section class="panel">
+        <h2>Strategi Masuk ke ZOPA — Negotiation Tactics</h2>
+
+        <div class="tactic-card">
+          <h4>A. Anchor Rendah tapi Rasional</h4>
+          <p>Jangan <em>lowball</em>. Gunakan justifikasi teknis.</p>
+          <div class="quote">"Berdasarkan sisa kontrak ${contractYears || '—'} tahun dan capex replacement, valuasi kami di kisaran <strong>${fmt(floorValue)} – ${fmt(entryPrice)}</strong>."</div>
+        </div>
+
+        <div class="tactic-card">
+          <h4>B. Risk Discounting (Senjata Utama)</h4>
+          <p>Turunkan harga dengan menyorot risiko — bukan sekadar menawar.</p>
+          <ul style="padding-left:20px; color:var(--text-dim); font-size:0.85rem;">
+            ${num('clientConcentration') > 60 ? '<li>Ketergantungan klien tinggi (' + num('clientConcentration') + '%)</li>' : ''}
+            ${escalation === 'no' ? '<li>Tidak ada escalation clause BBM</li>' : ''}
+            ${num('fleetAge') > 7 ? '<li>Fleet tua (rata-rata ' + num('fleetAge') + ' tahun) — capex replacement besar</li>' : ''}
+            ${contractYears < 3 ? '<li>Sisa kontrak pendek (' + contractYears + ' tahun)</li>' : ''}
+            ${val('extension') === 'no' ? '<li>Tidak ada jaminan perpanjangan</li>' : ''}
+            <li>Risk index keseluruhan: ${avgRisk.toFixed(2)}/5</li>
+          </ul>
+        </div>
+
+        <div class="tactic-card">
+          <h4>C. Geser ZOPA via Struktur (Paling Powerful)</h4>
+          <p>Struktur hybrid: upfront + earn-out + contingent. Seller merasa potensi value lebih tinggi, buyer aman.</p>
+        </div>
+
+        <div class="tactic-card">
+          <h4>D. Framing Persepsi Risiko (Halus)</h4>
+          <div class="quote">"Kami melihat potensi kontrak tidak diperpanjang, dan fleet replacement cost cukup besar dalam 2 tahun ke depan..."</div>
+          <p style="margin-top:6px;">Tujuan: menurunkan ekspektasi seller tanpa menakut-nakuti.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Rekomendasi Hybrid Deal Structure (ZOPA-Optimized)</h2>
+        <p class="page-sub">Struktur yang membuat seller merasa potensi total ${fmt(zopaHigh)}, tapi buyer hanya bayar pasti ${fmt(entryPrice * 0.65)}.</p>
+        <div class="result-grid">
+          <div class="result-card">
+            <div class="title">BASE (Upfront)</div>
+            <div class="value">${fmt(entryPrice * 0.65)}</div>
+            <div class="note">65% × entry price</div>
+          </div>
+          <div class="result-card">
+            <div class="title">VARIABLE (Kontrak Diperpanjang)</div>
+            <div class="value">${fmt(entryPrice * 0.20)}</div>
+            <div class="note">Trigger: perpanjangan ≥3 tahun</div>
+          </div>
+          <div class="result-card">
+            <div class="title">EBITDA Performance</div>
+            <div class="value">${fmt(entryPrice * 0.10)}</div>
+            <div class="note">Trigger: EBITDA target tercapai 2 thn</div>
+          </div>
+          <div class="result-card">
+            <div class="title">CONTINGENT (Downside)</div>
+            <div class="value" style="color:var(--danger);">−${fmt(entryPrice * 0.15)}</div>
+            <div class="note">Harga turun otomatis jika kontrak gagal</div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Headline ke Seller:</strong> "Total potensi ${fmt(entryPrice * 0.95)}" —
+          <strong>Realita Buyer:</strong> hanya ${fmt(entryPrice * 0.65)} committed + sisanya <em>performance-based</em>.
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Prinsip Kunci</h2>
+        <div class="callout info">
+          <strong>"ZOPA bukan soal menemukan harga tengah, tapi mengelola risiko melalui struktur."</strong>
+          <br><br>Fokus: <strong>kurangi risiko</strong>, bukan sekadar turunkan harga.
+        </div>
+      </section>
+    `;
+    document.getElementById('zopaOutput').innerHTML = zopaHtml;
+
+    // Store snapshot for export
+    window._lastResult = {
+      company: val('coName') || 'Untitled',
+      commodity: val('commodity'),
+      revenue, ebitda, netProfit, opCashFlow,
+      contractYears, clientConcentration: num('clientConcentration'),
+      avgRisk, multiple,
+      valuation: {
+        ebitdaMultiple: ebitdaValue,
+        dcf: dcfValue,
+        assetFloor: assetValue,
+        orderBook: orderBookValue,
+        conservativeWeighted: conservative
+      },
+      zopa: {
+        buyerFloor: floorValue,
+        buyerFair: fairValue,
+        buyerStrategic: strategicValue,
+        sellerAnchor, sellerRealExpectation, sellerMin,
+        hasOverlap,
+        zopaLow: hasOverlap ? zopaLow : null,
+        zopaHigh: hasOverlap ? zopaHigh : null,
+        entryPrice
+      }
+    };
+    
+
+    // Deal structure
+    const downPct = avgRisk <= 2 ? 60 : avgRisk <= 3 ? 50 : avgRisk <= 4 ? 40 : 30;
+    const earnOutPct = avgRisk <= 2 ? 30 : avgRisk <= 3 ? 35 : 40;
+    const retentionPct = 100 - downPct - earnOutPct;
+    const earnOutYears = contractYears >= 5 ? 3 : 2;
+
+    document.getElementById('dealStructureOutput').innerHTML = `
+      <div class="callout info">Struktur <em>deal</em> disesuaikan dengan risk index <strong>${avgRisk.toFixed(2)}/5</strong> dari perusahaan ini.</div>
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="title">Down Payment</div>
+          <div class="value">${downPct}%</div>
+          <div class="note">${fmt(conservative * downPct/100)}</div>
+        </div>
+        <div class="result-card">
+          <div class="title">Earn-Out (${earnOutYears} thn)</div>
+          <div class="value">${earnOutPct}%</div>
+          <div class="note">${fmt(conservative * earnOutPct/100)} · terikat EBITDA/produksi</div>
+        </div>
+        <div class="result-card">
+          <div class="title">Retention (1-2 thn)</div>
+          <div class="value">${retentionPct}%</div>
+          <div class="note">${fmt(conservative * retentionPct/100)} · cover hidden risk</div>
+        </div>
+      </div>
+      <h3>Rekomendasi Negosiasi:</h3>
+      <ul style="padding-left:22px; color:var(--text-dim); font-size:0.9rem;">
+        <li>Negosiasi <strong>extension clause</strong> kontrak utama SEBELUM akuisisi close.</li>
+        <li>Wajibkan <strong>minimum guaranteed volume</strong> dari klien untuk ${earnOutYears} tahun ke depan.</li>
+        ${contractYears < 3 ? '<li style="color:#fca5a5;"><strong>Turunkan harga</strong> karena kontrak pendek (&lt;3 tahun).</li>' : ''}
+        ${num('fleetAge') > 7 ? '<li style="color:#fca5a5;"><strong>Allokasi capex refreshment</strong> fleet dalam 2 tahun pertama.</li>' : ''}
+        <li>Tahan pembayaran retention untuk cover potensi <em>hidden liabilities</em> (pajak, sengketa, leasing).</li>
+      </ul>
+    `;
+
+    // Auto-navigate to valuation view
+    navLinks.forEach(l => l.classList.remove('active'));
+    document.querySelector('[data-view="valuation"]').classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-valuation').classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function resetAll() {
+    if (!confirm('Hapus semua data input dan data tersimpan?')) return;
+    document.querySelectorAll('input').forEach(i => i.value = '');
+    document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    document.getElementById('valuationOutput').innerHTML = '';
+    document.getElementById('dealStructureOutput').innerHTML = '<p class="page-sub">Jalankan perhitungan valuasi dulu untuk melihat rekomendasi deal.</p>';
+    document.getElementById('zopaOutput').innerHTML = '<p class="page-sub" style="text-align:center;">Jalankan perhitungan valuasi untuk melihat analisis ZOPA.</p>';
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY + '_ts');
+    updateSaveStatus('🗑 Data direset');
+    updateRiskMeter();
+  }
+
+  // ============ AUTO-SAVE ============
+  const STORAGE_KEY = 'valuasio_v1_data';
+  const saveStatusEl = document.getElementById('saveStatus');
+  let saveTimer = null;
+
+  function collectData() {
+    const data = {};
+    document.querySelectorAll('input, select').forEach(el => {
+      if (el.id) data[el.id] = el.value;
+    });
+    return data;
+  }
+
+  function saveData() {
+    try {
+      const data = collectData();
+      const ts = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEY + '_ts', ts);
+      updateSaveStatus('✓ Tersimpan ' + new Date(ts).toLocaleTimeString('id-ID'));
+    } catch (e) {
+      updateSaveStatus('⚠ Gagal simpan: ' + e.message);
+    }
+  }
+
+  function updateSaveStatus(msg) {
+    if (saveStatusEl) saveStatusEl.innerHTML = '💾 ' + msg;
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        updateSaveStatus('Auto-save aktif (belum ada data)');
+        return;
+      }
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = data[id];
+      });
+      const ts = localStorage.getItem(STORAGE_KEY + '_ts');
+      updateSaveStatus('✓ Dimuat ' + (ts ? new Date(ts).toLocaleString('id-ID', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : ''));
+      updateRiskMeter();
+    } catch (e) {
+      updateSaveStatus('⚠ Gagal muat data');
+    }
+  }
+
+  function scheduleAutoSave() {
+    clearTimeout(saveTimer);
+    updateSaveStatus('⏳ Menyimpan...');
+    saveTimer = setTimeout(saveData, 500);
+  }
+
+  // Attach listeners to all inputs/selects
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', scheduleAutoSave);
+    el.addEventListener('change', scheduleAutoSave);
+  });
+
+  // Load saved data on startup
+  loadData();
+
+  // ============ EXPORT VALUATION + ZOPA JSON ============
+  function exportValuationJSON() {
+    if (!window._lastResult) {
+      alert('Jalankan "Hitung Valuasi" dulu sebelum export.');
+      return;
+    }
+    const r = window._lastResult;
+    const payload = {
+      meta: {
+        app: 'Valuasio 1.0',
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        type: 'valuation_zopa_result'
+      },
+      company: {
+        name: r.company,
+        commodity: r.commodity,
+        contractYears: r.contractYears,
+        clientConcentrationPct: r.clientConcentration
+      },
+      financials: {
+        revenueBnIDR: r.revenue,
+        ebitdaBnIDR: r.ebitda,
+        netProfitBnIDR: r.netProfit,
+        opCashFlowBnIDR: r.opCashFlow,
+        ebitdaMarginPct: r.revenue ? (r.ebitda/r.revenue)*100 : 0
+      },
+      risk: {
+        averageRiskIndex: r.avgRisk
+      },
+      valuation: {
+        ebitdaMultiple: { multiple: r.multiple, valueBnIDR: r.valuation.ebitdaMultiple },
+        dcfBnIDR: r.valuation.dcf,
+        assetFloorBnIDR: r.valuation.assetFloor,
+        orderBookBnIDR: r.valuation.orderBook,
+        conservativeWeightedBnIDR: r.valuation.conservativeWeighted
+      },
+      zopa: {
+        buyerFloorBnIDR: r.zopa.buyerFloor,
+        buyerFairBnIDR: r.zopa.buyerFair,
+        buyerStrategicBnIDR: r.zopa.buyerStrategic,
+        sellerAnchorBnIDR: r.zopa.sellerAnchor,
+        sellerRealExpectationBnIDR: r.zopa.sellerRealExpectation,
+        sellerMinBnIDR: r.zopa.sellerMin,
+        hasOverlap: r.zopa.hasOverlap,
+        zopaLowBnIDR: r.zopa.zopaLow,
+        zopaHighBnIDR: r.zopa.zopaHigh,
+        targetEntryPriceBnIDR: r.zopa.entryPrice
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeName = (r.company || 'valuasi').replace(/[^a-z0-9]/gi,'_');
+    a.href = url;
+    a.download = `valuasio_${safeName}_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    updateSaveStatus('⬇ JSON Valuasi+ZOPA diexport');
+  }
+
+  // ============ BATNA: Import JSON & Compute ============
+  window._importedValuation = null;
+
+  function importBatnaJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.zopa || !data.valuation) throw new Error('Format JSON tidak valid — pastikan export dari Valuasio 1.0.');
+        window._importedValuation = data;
+
+        const z = data.zopa, v = data.valuation, c = data.company || {}, f = data.financials || {};
+        document.getElementById('batnaImportStatus').innerHTML = '✅ Berhasil impor: <strong>' + (c.name || 'Untitled') + '</strong> · ' + new Date(data.meta?.exportedAt).toLocaleString('id-ID');
+
+        document.getElementById('batnaImportSummary').innerHTML = `
+          <h3>Data Valuasi &amp; ZOPA Terimpor</h3>
+          <div class="result-grid">
+            <div class="result-card"><div class="title">Fair Value</div><div class="value">${fmt(z.buyerFairBnIDR)}</div><div class="note">Target ideal</div></div>
+            <div class="result-card" style="border-top-color:var(--danger);"><div class="title">Floor Value</div><div class="value" style="color:var(--danger);">${fmt(z.buyerFloorBnIDR)}</div><div class="note">Walk-away dasar</div></div>
+            <div class="result-card" style="border-top-color:var(--accent-2);"><div class="title">Strategic Max</div><div class="value" style="color:var(--accent-2);">${fmt(z.buyerStrategicBnIDR)}</div><div class="note">Max willingness</div></div>
+            <div class="result-card" style="border-top-color:var(--success);"><div class="title">Target Entry (ZOPA)</div><div class="value" style="color:var(--success);">${fmt(z.targetEntryPriceBnIDR)}</div><div class="note">${z.hasOverlap ? 'ZOPA: '+fmt(z.zopaLowBnIDR)+' – '+fmt(z.zopaHighBnIDR) : 'No overlap'}</div></div>
+            <div class="result-card" style="border-top-color:#fb7185;"><div class="title">Seller Anchor</div><div class="value" style="color:#fb7185;">${fmt(z.sellerAnchorBnIDR)}</div><div class="note">Optimistic seller</div></div>
+            <div class="result-card" style="border-top-color:var(--warning);"><div class="title">Seller Min</div><div class="value" style="color:var(--warning);">${fmt(z.sellerMinBnIDR)}</div><div class="note">Pain threshold</div></div>
+          </div>
+        `;
+
+        document.getElementById('batnaInputPanel').style.display = 'block';
+        recomputeBatna();
+      } catch (err) {
+        document.getElementById('batnaImportStatus').innerHTML = '❌ ' + err.message;
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function recomputeBatna() {
+    const src = window._importedValuation;
+    if (!src) return;
+    const z = src.zopa;
+
+    const altAcqPrice = parseFloat(document.getElementById('b_altAcqPrice').value) || 0;
+    const altAcqRisk = document.getElementById('b_altAcqRisk').value;
+    const gfCapex = parseFloat(document.getElementById('b_greenfieldCapex').value) || 0;
+    const gfSetup = parseFloat(document.getElementById('b_greenfieldSetup').value) || 0;
+    const gfTime = parseFloat(document.getElementById('b_greenfieldTime').value) || 1.5;
+    const gfDiscount = (parseFloat(document.getElementById('b_greenfieldDiscount').value) || 15) / 100;
+    const altIRR = parseFloat(document.getElementById('b_altIRR').value) || 0;
+    const altEquiv = parseFloat(document.getElementById('b_altInvestEquiv').value) || 0;
+    const wacc = 0.14;
+
+    // Compute 3 options
+    let opt1 = altAcqPrice;
+    if (altAcqRisk === 'lower') opt1 = altAcqPrice * 1.05;
+    else if (altAcqRisk === 'higher') opt1 = altAcqPrice * 0.90;
+
+    const gfRaw = gfCapex + gfSetup;
+    const opt2 = gfRaw > 0 ? gfRaw * (1 - gfDiscount) / Math.pow(1 + wacc, gfTime) : 0;
+
+    const opt3 = altEquiv;
+
+    const options = [
+      {name: 'Opsi 1: Akuisisi Target Alternatif', value: opt1, note: `Risk: ${altAcqRisk}`},
+      {name: 'Opsi 2: Build Your Own (Greenfield)', value: opt2, note: `Adj. ${(gfDiscount*100).toFixed(0)}% disc · ${gfTime}y delay`},
+      {name: 'Opsi 3: Capital Reallocation', value: opt3, note: `IRR alt: ${altIRR}%`}
+    ].filter(o => o.value > 0);
+
+    if (options.length === 0) {
+      document.getElementById('batnaOutput').innerHTML = '<section class="panel"><div class="callout">Isi minimal 1 opsi BATNA untuk melihat hasil.</div></section>';
+      return;
+    }
+
+    const batnaPrice = Math.max(...options.map(o => o.value));
+    const bestOpt = options.find(o => o.value === batnaPrice);
+    const walkAway = batnaPrice * 1.05;
+
+    // Decision
+    const entry = z.targetEntryPriceBnIDR;
+    const sellerAnchor = z.sellerAnchorBnIDR;
+    let decision, color, icon;
+    if (entry <= batnaPrice * 0.95) {
+      decision = `GO — Target entry (${fmt(entry)}) di bawah BATNA. Deal lebih menarik dari alternatif.`;
+      color = 'var(--success)'; icon = '✅';
+    } else if (entry <= walkAway) {
+      decision = `STRUCTURE — Harga mendekati BATNA. Gunakan earn-out/contingent untuk tutup gap.`;
+      color = 'var(--warning)'; icon = '🟡';
+    } else {
+      decision = `WALK AWAY — Entry (${fmt(entry)}) di atas walk-away (${fmt(walkAway)}). Alternatif lebih baik.`;
+      color = 'var(--danger)'; icon = '🛑';
+    }
+
+    const entryVsBatna = (entry / batnaPrice) * 100;
+
+    document.getElementById('batnaOutput').innerHTML = `
+      <section class="panel">
+        <h2>3 Opsi BATNA (Kuantitatif)</h2>
+        <div class="result-grid">
+          ${options.map(o => `
+            <div class="result-card" style="border-top-color:${o.value === batnaPrice ? 'var(--success)' : 'var(--accent-2)'};">
+              <div class="title">${o.name}</div>
+              <div class="value" style="color:${o.value === batnaPrice ? 'var(--success)' : 'var(--text)'};">${fmt(o.value)}</div>
+              <div class="note">${o.note}${o.value === batnaPrice ? ' · <strong>TERBAIK</strong>' : ''}</div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Angka Kunci BATNA</h2>
+        <div class="result-grid">
+          <div class="result-card final">
+            <div class="title">🎯 BATNA Price</div>
+            <div class="value">${fmt(batnaPrice)}</div>
+            <div class="note">${bestOpt.name}</div>
+          </div>
+          <div class="result-card" style="border-top-color:var(--warning);">
+            <div class="title">Walk-Away Price</div>
+            <div class="value" style="color:var(--warning);">${fmt(walkAway)}</div>
+            <div class="note">BATNA + 5% strategic buffer</div>
+          </div>
+          <div class="result-card" style="border-top-color:${color};">
+            <div class="title">Entry Price (dari JSON)</div>
+            <div class="value" style="color:${color};">${fmt(entry)}</div>
+            <div class="note">${entryVsBatna.toFixed(0)}% dari BATNA</div>
+          </div>
+        </div>
+        <div class="flag" style="background:${color}22; border-left-color:${color}; color:${color}; font-size:1rem; font-weight:600; margin-top:14px;">
+          ${icon} ${decision}
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>BATNA vs Valuasi — Perspektif Disiplin</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+          <thead><tr style="background:var(--surface-2); color:var(--accent);">
+            <th style="padding:10px; text-align:left;">Metrik</th>
+            <th style="padding:10px; text-align:right;">Nilai</th>
+            <th style="padding:10px; text-align:left;">Implikasi</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;">Floor Value</td><td style="padding:10px; text-align:right;">${fmt(z.buyerFloorBnIDR)}</td><td style="padding:10px; color:var(--text-dim);">Absolute minimum</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;">Fair Value</td><td style="padding:10px; text-align:right;">${fmt(z.buyerFairBnIDR)}</td><td style="padding:10px; color:var(--text-dim);">Target ideal</td></tr>
+            <tr style="border-bottom:1px solid var(--border); background:rgba(34,197,94,0.05);"><td style="padding:10px;"><strong>BATNA</strong></td><td style="padding:10px; text-align:right;"><strong>${fmt(batnaPrice)}</strong></td><td style="padding:10px; color:var(--success);">Batas real Anda</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;">Walk-Away</td><td style="padding:10px; text-align:right;">${fmt(walkAway)}</td><td style="padding:10px; color:var(--warning);">Maksimum deal ini</td></tr>
+            <tr><td style="padding:10px;">Strategic Value</td><td style="padding:10px; text-align:right;">${fmt(z.buyerStrategicBnIDR)}</td><td style="padding:10px; color:var(--text-dim);">Teoritis max (butuh justifikasi)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>Taktik Negosiasi Berbasis BATNA</h2>
+
+        <div class="tactic-card">
+          <h4>🔹 Controlled Patience</h4>
+          <p>Jangan terlihat butuh deal. BATNA memberi Anda hak untuk tidak buru-buru.</p>
+        </div>
+
+        <div class="tactic-card">
+          <h4>🔹 Soft Walk-Away</h4>
+          <div class="quote">"Dengan struktur saat ini, akan sulit bagi kami untuk melanjutkan."</div>
+          <p style="margin-top:6px;">Diam setelah kalimat ini. Biarkan seller yang turun.</p>
+        </div>
+
+        <div class="tactic-card">
+          <h4>🔹 BATNA Reveal (Selective)</h4>
+          <div class="quote">"Kami memiliki alternatif dengan valuasi di bawah ${fmt(batnaPrice)} dengan profil risiko yang lebih <em>manageable</em>."</div>
+          <p style="margin-top:6px;">Sinyal: Anda tidak tergantung deal ini.</p>
+        </div>
+
+        <div class="tactic-card">
+          <h4>🔹 Split the Risk (Gap Closure)</h4>
+          <p>Jika seller minta di atas BATNA, jangan naikkan harga — alihkan ke earn-out/contingent.</p>
+          ${sellerAnchor > batnaPrice ? `
+            <p style="margin-top:6px; color:var(--text);"><strong>Contoh untuk deal ini:</strong></p>
+            <div class="quote">
+              Seller minta ${fmt(sellerAnchor)} · BATNA Anda ${fmt(batnaPrice)}<br>
+              → <strong>${fmt(batnaPrice * 0.80)}</strong> upfront + <strong>${fmt(sellerAnchor - batnaPrice * 0.80)}</strong> earn-out performance-based<br>
+              Seller merasa dapat ${fmt(sellerAnchor)} · Anda tetap dekat BATNA.
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="tactic-card">
+          <h4>🔹 Disiplin Utama</h4>
+          <div class="quote">"Apa yang membuat deal ini lebih baik dari alternatif saya di ${fmt(batnaPrice)}?"</div>
+          <p style="margin-top:6px;">Jika seller tidak bisa jawab → <strong>walk away</strong>.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Framework Final</h2>
+        <ol class="step-list">
+          <li><strong>Hitung Fair &amp; Strategic Value</strong><span>Dari JSON valuasi + ZOPA</span></li>
+          <li><strong>Hitung BATNA (angka)</strong><span>Max dari 3 opsi alternatif</span></li>
+          <li><strong>Target Price &lt; BATNA · Walk-Away ≈ BATNA</strong><span>Disiplin harga</span></li>
+          <li><strong>Tekan harga via risk argument · Tutup gap via struktur</strong><span>Kelola risiko, bukan turunkan harga</span></li>
+        </ol>
+      </section>
+    `;
+  }
+</script>
+</body>
+</html>
